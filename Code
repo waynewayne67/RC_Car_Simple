@@ -1,0 +1,113 @@
+#include <IRremote.h>
+
+// C++ code
+//
+#include "IRremote.h"
+const int CCW1 = 6;
+const int CW1 = 11;
+const int CCW2 = 10;
+const int CW2 = 9;
+const int speed1 = 2;
+const int speed2 = 4;
+int receiver = 7; 
+long duration;
+long cm;
+
+IRrecv irrecv(receiver);   
+uint32_t last_decodedRawData = 0;
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(CCW1, OUTPUT);
+  pinMode(CW1, OUTPUT);
+  pinMode(CCW2, OUTPUT);
+  pinMode(CW2, OUTPUT);
+  pinMode(speed1, OUTPUT);
+  pinMode(speed2, OUTPUT);
+  irrecv.enableIRIn();
+}
+
+void loop()
+{
+  BACKWARDS();
+ 
+  
+  {
+  if (irrecv.decode()) 
+  {
+    translateIR();
+    irrecv.resume(); 
+  }
+}
+  }
+
+void BACKWARDS () {
+  digitalWrite(CW1, LOW);
+  digitalWrite(CCW1, HIGH);
+  digitalWrite(CW2, LOW);
+  digitalWrite(CCW2, HIGH);
+  digitalWrite(speed1, HIGH);
+  digitalWrite(speed2, HIGH);
+ 
+}  
+void FORWARDS () {
+  digitalWrite(CW1, HIGH);
+  digitalWrite(CCW1, LOW);
+  digitalWrite(CW2, HIGH);
+  digitalWrite(CCW2, LOW);
+  digitalWrite(speed1, HIGH);
+  digitalWrite(speed2, HIGH);
+ 
+}
+void STOP () {
+  digitalWrite(CW1, HIGH);
+  digitalWrite(CCW1, HIGH);
+  digitalWrite(CW2, HIGH);
+  digitalWrite(CCW2, HIGH);
+ 
+
+}
+void RIGHT () {
+  digitalWrite(CW1, HIGH);
+  digitalWrite(CCW1, LOW);
+  digitalWrite(CW2, LOW);
+  digitalWrite(CCW2, HIGH);
+  digitalWrite(speed1, HIGH);
+  digitalWrite(speed2, HIGH);
+
+}
+void LEFT () {
+  digitalWrite(CW1, LOW);
+  digitalWrite(CCW1, HIGH);
+  digitalWrite(CW2, HIGH);
+  digitalWrite(CCW2, LOW);
+  digitalWrite(speed1, HIGH);
+  digitalWrite(speed2, HIGH);
+  
+}
+
+void translateIR() 
+{
+
+  if (irrecv.decodedIRData.flags)
+  {
+    irrecv.decodedIRData.decodedRawData = last_decodedRawData;
+    Serial.println("REPEAT!");
+  } else
+  {
+    Serial.print("IR code:0x");
+    Serial.println(irrecv.decodedIRData.decodedRawData, HEX);
+  }
+  switch (irrecv.decodedIRData.decodedRawData)
+  {
+    case 0xB946FF00: FORWARDS (); //Serial.println("VOL+"); break;
+    case 0xBB44FF00: LEFT (); //Serial.println("FAST BACK");    break;
+    case 0xBC43FF00: RIGHT ();//Serial.println("FAST FORWARD");   break;
+    case 0xEA15FF00: Serial.println("VOL-"); break;//BACKWARDS ();
+    //Serial.println("VOL-");    break;
+    default:
+      Serial.println(" other button   ");
+  }
+  last_decodedRawData = irrecv.decodedIRData.decodedRawData;
+  delay(500);
+} 
